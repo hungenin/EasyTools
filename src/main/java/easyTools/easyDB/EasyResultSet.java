@@ -8,7 +8,7 @@ import java.util.List;
 public class EasyResultSet{
     private List<String> columnTypes = new ArrayList<>();
     private List<String> columnLabels = new ArrayList<>();
-    private List<ArrayList<Object>> columns = new ArrayList<>();
+    private List<ArrayList<Object>> rows = new ArrayList<>();
 
     private Integer rowIterator = null;
 
@@ -17,48 +17,14 @@ public class EasyResultSet{
 
     public EasyResultSet(ResultSet resultSet){
         try{
-            ResultSetMetaData metaData = resultSet.getMetaData();
-            int columnCount = metaData.getColumnCount();
-            for (int i = 0; i < columnCount; i++){
-                if (metaData.getColumnTypeName(i + 1).equals("CLOB")) columnTypes.add("String");
-                else if (metaData.getColumnTypeName(i + 1).equals("VARCHAR")) columnTypes.add("String");
-                else if (metaData.getColumnTypeName(i + 1).equals("LONGVARCHAR")) columnTypes.add("String");
-                else if (metaData.getColumnTypeName(i + 1).equals("TEXT")) columnTypes.add("String");
-                else if (metaData.getColumnTypeName(i + 1).equals("INTEGER")) columnTypes.add("Integer");
-                else if (metaData.getColumnTypeName(i + 1).equals("SMALLINT")) columnTypes.add("Short");
-                else if (metaData.getColumnTypeName(i + 1).equals("BIGINT")) columnTypes.add("Long");
-                else if (metaData.getColumnTypeName(i + 1).equals("DECIMAL")) columnTypes.add("BigDecimal");
-                else if (metaData.getColumnTypeName(i + 1).equals("FLOAT")) columnTypes.add("Float");
-                else if (metaData.getColumnTypeName(i + 1).equals("DOUBLE")) columnTypes.add("Double");
-                else if (metaData.getColumnTypeName(i + 1).equals("BOOLEAN")) columnTypes.add("Boolean");
-                else if (metaData.getColumnTypeName(i + 1).equals("TIME")) columnTypes.add("Time");
-                else if (metaData.getColumnTypeName(i + 1).equals("TIMESTAMP")) columnTypes.add("Timestamp");
-                else if (metaData.getColumnTypeName(i + 1).equals("DATE")) columnTypes.add("Date");
+            createColumnTypesAndLabels(resultSet.getMetaData());
 
-                else if (metaData.getColumnTypeName(i + 1).equals("int4")) columnTypes.add("Integer");
-                else if (metaData.getColumnTypeName(i + 1).equals("varchar")) columnTypes.add("String");
-
-                columnLabels.add(metaData.getColumnName(i + 1));
-            }
             while (resultSet.next()){
-                ArrayList<Object> row = new ArrayList<>();
-                for (int i = 0; i < columnCount; i++){
-                    if (columnTypes.get(i).equals("String")) row.add(resultSet.getString(i + 1));
-                    else if (columnTypes.get(i).equals("Integer")) row.add(resultSet.getInt(i + 1));
-                    else if (columnTypes.get(i).equals("Short")) row.add(resultSet.getShort(i + 1));
-                    else if (columnTypes.get(i).equals("Long")) row.add(resultSet.getLong(i + 1));
-                    else if (columnTypes.get(i).equals("Float")) row.add(resultSet.getFloat(i + 1));
-                    else if (columnTypes.get(i).equals("Double")) row.add(resultSet.getDouble(i + 1));
-                    else if (columnTypes.get(i).equals("Boolean")) row.add(resultSet.getBoolean(i + 1));
-                    else if (columnTypes.get(i).equals("Time")) row.add(resultSet.getTime(i + 1));
-                    else if (columnTypes.get(i).equals("Timestamp")) row.add(resultSet.getTimestamp(i + 1));
-                    else if (columnTypes.get(i).equals("Date")) row.add(resultSet.getDate(i + 1));
-                    else if (columnTypes.get(i).equals("BigDecimal")) row.add(resultSet.getBigDecimal(i + 1));
-                }
-                if (row.size() > 0) columns.add(row);
+                ArrayList<Object> row = saveResultSetToList(resultSet);
+                if (row.size() > 0) rows.add(row);
             }
-        }catch (SQLException throwables){
-            throwables.printStackTrace();
+        }catch (SQLException e){
+            e.printStackTrace();
         }
     }
 
@@ -67,7 +33,7 @@ public class EasyResultSet{
 
         if (!columnTypes.get(columnIndex - 1).equals("String")) throw new ClassCastException("Column type is not String");
 
-        return (String) columns.get(rowIterator).get(columnIndex - 1);
+        return (String) rows.get(rowIterator).get(columnIndex - 1);
     }
     public String getString(String columnLabel){
         for (int i = 0; i < columnLabel.length(); i++){
@@ -80,7 +46,7 @@ public class EasyResultSet{
         if (columnIndex < 1 || columnIndex > columnTypes.size()) throw new ArrayIndexOutOfBoundsException("Invalid column index");
         if (!columnTypes.get(columnIndex - 1).equals("Integer")) throw new ClassCastException("Column type is not Integer");
 
-        return (Integer) columns.get(rowIterator).get(columnIndex - 1);
+        return (Integer) rows.get(rowIterator).get(columnIndex - 1);
     }
     public Integer getInt(String columnLabel){
         for (int i = 0; i < columnLabel.length(); i++){
@@ -93,7 +59,7 @@ public class EasyResultSet{
         if (columnIndex < 1 || columnIndex > columnTypes.size()) throw new ArrayIndexOutOfBoundsException("Invalid column index");
         if (!columnTypes.get(columnIndex - 1).equals("Short")) throw new ClassCastException("Column type is not Short");
 
-        return (Short) columns.get(rowIterator).get(columnIndex - 1);
+        return (Short) rows.get(rowIterator).get(columnIndex - 1);
     }
     public Short getShort(String columnLabel){
         for (int i = 0; i < columnLabel.length(); i++){
@@ -106,7 +72,7 @@ public class EasyResultSet{
         if (columnIndex < 1 || columnIndex > columnTypes.size()) throw new ArrayIndexOutOfBoundsException("Invalid column index");
         if (!columnTypes.get(columnIndex - 1).equals("Long")) throw new ClassCastException("Column type is not Long");
 
-        return (Long) columns.get(rowIterator).get(columnIndex - 1);
+        return (Long) rows.get(rowIterator).get(columnIndex - 1);
     }
     public Long getLong(String columnLabel){
         for (int i = 0; i < columnLabel.length(); i++){
@@ -119,7 +85,7 @@ public class EasyResultSet{
         if (columnIndex < 1 || columnIndex > columnTypes.size()) throw new ArrayIndexOutOfBoundsException("Invalid column index");
         if (!columnTypes.get(columnIndex - 1).equals("BigDecimal")) throw new ClassCastException("Column type is not BigDecimal");
 
-        return (BigDecimal) columns.get(rowIterator).get(columnIndex - 1);
+        return (BigDecimal) rows.get(rowIterator).get(columnIndex - 1);
     }
     public BigDecimal getBigDecimal(String columnLabel){
         for (int i = 0; i < columnLabel.length(); i++){
@@ -132,7 +98,7 @@ public class EasyResultSet{
         if (columnIndex < 1 || columnIndex > columnTypes.size()) throw new ArrayIndexOutOfBoundsException("Invalid column index");
         if (!columnTypes.get(columnIndex - 1).equals("Float")) throw new ClassCastException("Column type is not Float");
 
-        return (Float) columns.get(rowIterator).get(columnIndex - 1);
+        return (Float) rows.get(rowIterator).get(columnIndex - 1);
     }
     public Float getFloat(String columnLabel){
         for (int i = 0; i < columnLabel.length(); i++){
@@ -145,7 +111,7 @@ public class EasyResultSet{
         if (columnIndex < 1 || columnIndex > columnTypes.size()) throw new ArrayIndexOutOfBoundsException("Invalid column index");
         if (!columnTypes.get(columnIndex - 1).equals("Double")) throw new ClassCastException("Column type is not Double");
 
-        return (Double) columns.get(rowIterator).get(columnIndex - 1);
+        return (Double) rows.get(rowIterator).get(columnIndex - 1);
     }
     public Double getDouble(String columnLabel){
         for (int i = 0; i < columnLabel.length(); i++){
@@ -158,7 +124,7 @@ public class EasyResultSet{
         if (columnIndex < 1 || columnIndex > columnTypes.size()) throw new ArrayIndexOutOfBoundsException("Invalid column index");
         if (!columnTypes.get(columnIndex - 1).equals("Boolean")) throw new ClassCastException("Column type is not Boolean");
 
-        return (Boolean) columns.get(rowIterator).get(columnIndex - 1);
+        return (Boolean) rows.get(rowIterator).get(columnIndex - 1);
     }
     public Boolean getBoolean(String columnLabel){
         for (int i = 0; i < columnLabel.length(); i++){
@@ -171,7 +137,7 @@ public class EasyResultSet{
         if (columnIndex < 1 || columnIndex > columnTypes.size()) throw new ArrayIndexOutOfBoundsException("Invalid column index");
         if (!columnTypes.get(columnIndex - 1).equals("Time")) throw new ClassCastException("Column type is not Time");
 
-        return (Time) columns.get(rowIterator).get(columnIndex - 1);
+        return (Time) rows.get(rowIterator).get(columnIndex - 1);
     }
     public Time getTime(String columnLabel){
         for (int i = 0; i < columnLabel.length(); i++){
@@ -184,7 +150,7 @@ public class EasyResultSet{
         if (columnIndex < 1 || columnIndex > columnTypes.size()) throw new ArrayIndexOutOfBoundsException("Invalid column index");
         if (!columnTypes.get(columnIndex - 1).equals("Timestamp")) throw new ClassCastException("Column type is not Timestamp");
 
-        return (Timestamp) columns.get(rowIterator).get(columnIndex - 1);
+        return (Timestamp) rows.get(rowIterator).get(columnIndex - 1);
     }
     public Timestamp getTimestamp(String columnLabel){
         for (int i = 0; i < columnLabel.length(); i++){
@@ -197,7 +163,7 @@ public class EasyResultSet{
         if (columnIndex < 1 || columnIndex > columnTypes.size()) throw new ArrayIndexOutOfBoundsException("Invalid column index");
         if (!columnTypes.get(columnIndex - 1).equals("Date")) throw new ClassCastException("Column type is not Date");
 
-        return (Date) columns.get(rowIterator).get(columnIndex - 1);
+        return (Date) rows.get(rowIterator).get(columnIndex - 1);
     }
     public Date getDate(String columnLabel){
         for (int i = 0; i < columnLabel.length(); i++){
@@ -217,17 +183,124 @@ public class EasyResultSet{
 
     public boolean next(){
         if (rowIterator == null){
-            if (columns.size() > 0){
+            if (rows.size() > 0){
                 rowIterator = 0;
                 return true;
             }
             return false;
         }
-        if (rowIterator < columns.size() - 1){
+        if (rowIterator < rows.size() - 1){
             rowIterator++;
             return true;
         }
         rowIterator = null;
         return false;
     }
+
+
+    private void createColumnTypesAndLabels(ResultSetMetaData metaData) throws SQLException{
+        for (int i = 0; i < metaData.getColumnCount(); i++){
+            String columnType = getColumnType(metaData.getColumnTypeName(i + 1));
+
+            if (columnType == null) throw new SQLException("Not implemented column type: " + metaData.getColumnTypeName(i + 1));
+
+            columnTypes.add(columnType);
+            columnLabels.add(metaData.getColumnName(i + 1));
+        }
+    }
+
+    private ArrayList<Object> saveResultSetToList(ResultSet resultSet) throws SQLException{
+        ArrayList<Object> row = new ArrayList<>();
+        for (int i = 0; i < columnTypes.size(); i++){
+            switch (columnTypes.get(i)){
+                case "String":
+                    row.add(resultSet.getString(i + 1));
+                    break;
+                case "Integer":
+                    row.add(resultSet.getInt(i + 1));
+                    break;
+                case "Short":
+                    row.add(resultSet.getShort(i + 1));
+                    break;
+                case "Long":
+                    row.add(resultSet.getLong(i + 1));
+                    break;
+                case "Float":
+                    row.add(resultSet.getFloat(i + 1));
+                    break;
+                case "Double":
+                    row.add(resultSet.getDouble(i + 1));
+                    break;
+                case "Boolean":
+                    row.add(resultSet.getBoolean(i + 1));
+                    break;
+                case "Time":
+                    row.add(resultSet.getTime(i + 1));
+                    break;
+                case "Timestamp":
+                    row.add(resultSet.getTimestamp(i + 1));
+                    break;
+                case "Date":
+                    row.add(resultSet.getDate(i + 1));
+                    break;
+                case "BigDecimal":
+                    row.add(resultSet.getBigDecimal(i + 1));
+                default:
+                    throw new SQLException("Unknown column type: " + columnTypes.get(i));
+            }
+        }
+
+        return row;
+    }
+
+    private String getColumnType(String columnType){
+        String type = getH2ColumnType(columnType);
+        if (type == null) type = getPostgresColumnType(columnType);
+
+        return type;
+    }
+
+    private String getH2ColumnType(String h2ColumnType){
+        switch (h2ColumnType){
+            case "CLOB":
+            case "VARCHAR":
+            case "LONGVARCHAR":
+            case "TEXT":
+                return "String";
+            case "INTEGER":
+                return "Integer";
+            case "SMALLINT":
+                return "Short";
+            case "BIGINT":
+                return "Long";
+            case "DECIMAL":
+                return "BigDecimal";
+            case "FLOAT":
+                return "Float";
+            case "DOUBLE":
+                return "Double";
+            case "BOOLEAN":
+                return "Boolean";
+            case "TIME":
+                return "Time";
+            case "TIMESTAMP":
+                return "Timestamp";
+            case "DATE":
+                return "Date";
+            default:
+                return null;
+        }
+    }
+
+    private String getPostgresColumnType(String postgresColumnType){
+        switch (postgresColumnType){
+            case "varchar":
+                return "String";
+            case "int4":
+                return "Integer";
+            default:
+                return null;
+        }
+    }
+
 }
